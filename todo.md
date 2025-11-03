@@ -1,0 +1,45 @@
+# Walk Score Editor TODO
+
+- [x] Create infographic display component with editable fields
+- [x] Add contenteditable functionality for all text elements
+- [x] Add emoji picker or input for icons
+- [x] Implement image upload for hotel photo
+- [x] Add html2canvas library for export functionality
+- [x] Create export button to download as PNG
+- [x] Style the editor interface with clear edit indicators
+- [x] Add instructions/help text for users
+- [x] Center the commute title and change text to "Commute to Canadian Tire Centre"
+- [x] Add rounded corners to the hotel image section
+- [x] Fix hotel image centering issue
+- [x] Change hotel image section background to white
+- [x] Adjust hotel title font size to fit on one line
+- [x] Increase hotel title font size slightly
+- [x] Increase address font size slightly
+- [x] Stack nearby places cards with distance under name
+- [x] Fix CSS to properly stack name and distance vertically
+- [x] Update nearby categories to: Food & Beverage, Rogers Centre, Rideau Centre, Parks & Museums
+- [x] Change commute destination to Parliament Hill
+- [x] Change Rogers Centre icon to convention centre icon
+- [x] Change Rogers Centre icon to stadium emoji
+- [x] Add image upload functionality for Rogers Centre icon
+- [x] Replace Rogers Centre logo with new version
+- [x] Add rounded corners to Rogers Centre logo
+- [x] Update Rogers Centre logo to transparent background version
+- [x] Increase Rogers Centre logo size
+- [x] Make Rogers Centre logo even bigger
+- [x] Replace Rogers Centre logo with better version and resize to 60x60
+- [x] Replace Parks & Museums emoji with custom image icon
+- [x] Change walking emoji to woman emoji in Parliament Hill section
+- [x] Replace Food & Beverage emoji with custom image icon
+- [x] Change biking emoji to woman with dark hair biking
+- [x] Replace Rideau Centre emoji with custom mall icon
+- [x] Reduce vertical size of walk score cards
+- [x] Replace car and bus emojis with custom icons
+- [x] Update commute times (car: 4 min, bus: 10 min, walking: 11 min)
+- [x] Move bike and walk time durations below icons to match car and bus layout
+- [x] Reposition all time durations to appear beside icons on the left
+- [x] Reduce gap between icons and time text to fit on one line
+- [x] Reduce top spacing to push infographic card upward
+- [x] Change hotel image section background color to #f5f5f5
+- [x] Fix html2canvas oklch color format error
+- [x] Fix html2canvas cloned iframe error
