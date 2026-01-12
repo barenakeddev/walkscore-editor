@@ -107,3 +107,5 @@ temp/
 
 # Development tooling
 Continuous-Claude-v3/
+.vercel
+.env*.local
