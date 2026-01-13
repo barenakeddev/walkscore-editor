@@ -4,12 +4,23 @@ import { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import ImageCropModal from "@/components/ImageCropModal";
+import IconUploader from "@/components/IconUploader";
 
 export default function InfographicEditor() {
   const infographicRef = useRef<HTMLDivElement>(null);
   const [originalImageUrl, setOriginalImageUrl] = useState<string>("");
   const [croppedImageUrl, setCroppedImageUrl] = useState<string>("");
   const [showCropModal, setShowCropModal] = useState(false);
+  const [customIcons, setCustomIcons] = useState<{
+    foodBeverage?: string;
+    location1?: string;
+    location2?: string;
+    parksMuseums?: string;
+    car?: string;
+    bus?: string;
+    bike?: string;
+    walking?: string;
+  }>({});
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -41,30 +52,32 @@ export default function InfographicEditor() {
         useCORS: true,
         allowTaint: true,
         onclone: (clonedDoc) => {
-          // Process all style elements to remove OKLCH colors
+          // Process all style elements to remove OKLCH/OKLAB colors
           const styleElements = Array.from(clonedDoc.querySelectorAll('style'));
           styleElements.forEach(styleEl => {
             try {
-              // Replace oklch() with transparent to avoid parsing errors
+              // Replace oklch() and oklab() with transparent to avoid parsing errors
               if (styleEl.textContent) {
-                styleEl.textContent = styleEl.textContent.replace(/oklch\([^)]+\)/gi, 'transparent');
+                styleEl.textContent = styleEl.textContent
+                  .replace(/oklch\([^)]+\)/gi, 'transparent')
+                  .replace(/oklab\([^)]+\)/gi, 'transparent');
               }
             } catch (e) {
               console.error('Error processing style:', e);
             }
           });
 
-          // Also process inline CSSStyleSheet if available
+          // Process inline CSSStyleSheet if available
           try {
             Array.from(clonedDoc.styleSheets).forEach((sheet: any) => {
               try {
                 const rules = Array.from(sheet.cssRules || sheet.rules || []);
                 rules.forEach((rule: any) => {
                   if (rule.style) {
-                    // Check each style property for oklch
+                    // Check each style property for oklch/oklab
                     Array.from(rule.style as unknown as string[]).forEach((prop: string) => {
                       const value = rule.style.getPropertyValue(prop);
-                      if (value && value.includes('oklch')) {
+                      if (value && (value.includes('oklch') || value.includes('oklab'))) {
                         rule.style.setProperty(prop, 'transparent');
                       }
                     });
@@ -76,6 +89,49 @@ export default function InfographicEditor() {
             });
           } catch (e) {
             console.error('Error processing stylesheets:', e);
+          }
+
+          // Process all elements with inline styles containing oklab/oklch
+          try {
+            const allElements = clonedDoc.querySelectorAll('*');
+            allElements.forEach((element: any) => {
+              if (element.style) {
+                // Check inline styles
+                Array.from(element.style).forEach((prop: string) => {
+                  const value = element.style.getPropertyValue(prop);
+                  if (value && (value.includes('oklch') || value.includes('oklab'))) {
+                    element.style.setProperty(prop, 'transparent', 'important');
+                  }
+                });
+
+                // Also check computed styles and force override if needed
+                try {
+                  const computed = window.getComputedStyle(element);
+                  ['color', 'background-color', 'border-color', 'border-top-color', 'border-right-color', 'border-bottom-color', 'border-left-color', 'outline-color'].forEach(prop => {
+                    const value = computed.getPropertyValue(prop);
+                    if (value && (value.includes('oklch') || value.includes('oklab'))) {
+                      element.style.setProperty(prop, 'transparent', 'important');
+                    }
+                  });
+                } catch (e) {
+                  // Ignore errors from computed style access
+                }
+              }
+
+              // Remove CSS variables that might contain oklab/oklch
+              if (element.style) {
+                Array.from(element.style).forEach((prop: string) => {
+                  if (prop.startsWith('--')) {
+                    const value = element.style.getPropertyValue(prop);
+                    if (value && (value.includes('oklch') || value.includes('oklab'))) {
+                      element.style.removeProperty(prop);
+                    }
+                  }
+                });
+              }
+            });
+          } catch (e) {
+            console.error('Error processing inline styles:', e);
           }
         },
       });
@@ -261,7 +317,12 @@ export default function InfographicEditor() {
                 {/* Food & Beverage */}
                 <div className="rounded-xl p-2.5 flex items-center gap-2" style={{ backgroundColor: "#5a6a7d" }}>
                   <div className="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
-                    <img src="/food-beverage-icon.png" alt="Food & Beverage" className="w-full h-full object-contain rounded-lg" />
+                    <IconUploader
+                      currentIcon={customIcons.foodBeverage || "/food-beverage-icon.png"}
+                      onIconUpload={(dataUrl) => setCustomIcons({...customIcons, foodBeverage: dataUrl})}
+                      alt="Food & Beverage"
+                      className="w-full h-full object-contain rounded-lg"
+                    />
                   </div>
                   <div className="flex-1">
                     <div
@@ -286,7 +347,12 @@ export default function InfographicEditor() {
                 {/* Rogers Centre */}
                 <div className="rounded-xl p-2.5 flex items-center gap-2" style={{ backgroundColor: "#5a6a7d" }}>
                   <div className="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
-                    <img src="/rogers-centre-logo.png" alt="Rogers Centre" className="w-full h-full object-contain rounded-lg" />
+                    <IconUploader
+                      currentIcon={customIcons.location1 || "/rogers-centre-logo.png"}
+                      onIconUpload={(dataUrl) => setCustomIcons({...customIcons, location1: dataUrl})}
+                      alt="Rogers Centre"
+                      className="w-full h-full object-contain rounded-lg"
+                    />
                   </div>
                   <div className="flex-1">
                     <div
@@ -311,7 +377,12 @@ export default function InfographicEditor() {
                 {/* Rideau Centre */}
                 <div className="rounded-xl p-2.5 flex items-center gap-2" style={{ backgroundColor: "#5a6a7d" }}>
                   <div className="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
-                    <img src="/rideau-centre-icon.png" alt="Rideau Centre" className="w-full h-full object-contain rounded-lg" />
+                    <IconUploader
+                      currentIcon={customIcons.location2 || "/rideau-centre-icon.png"}
+                      onIconUpload={(dataUrl) => setCustomIcons({...customIcons, location2: dataUrl})}
+                      alt="Rideau Centre"
+                      className="w-full h-full object-contain rounded-lg"
+                    />
                   </div>
                   <div className="flex-1">
                     <div
@@ -336,7 +407,12 @@ export default function InfographicEditor() {
                 {/* Parks & Museums */}
                 <div className="rounded-xl p-2.5 flex items-center gap-2" style={{ backgroundColor: "#5a6a7d" }}>
                   <div className="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
-                    <img src="/parks-museums-icon.png" alt="Parks & Museums" className="w-full h-full object-contain rounded-lg" />
+                    <IconUploader
+                      currentIcon={customIcons.parksMuseums || "/parks-museums-icon.png"}
+                      onIconUpload={(dataUrl) => setCustomIcons({...customIcons, parksMuseums: dataUrl})}
+                      alt="Parks & Museums"
+                      className="w-full h-full object-contain rounded-lg"
+                    />
                   </div>
                   <div className="flex-1">
                     <div
@@ -374,7 +450,12 @@ export default function InfographicEditor() {
                 <div className="grid grid-cols-4 gap-1.5">
                   <div className="flex items-center gap-0.5">
                     <div className="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
-                      <img src="/car-icon.png" alt="Car" className="w-full h-full object-contain" />
+                      <IconUploader
+                        currentIcon={customIcons.car || "/car-icon.png"}
+                        onIconUpload={(dataUrl) => setCustomIcons({...customIcons, car: dataUrl})}
+                        alt="Car"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div
                       contentEditable
@@ -387,7 +468,12 @@ export default function InfographicEditor() {
                   </div>
                   <div className="flex items-center gap-0.5">
                     <div className="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
-                      <img src="/bus-icon.png" alt="Bus" className="w-full h-full object-contain" />
+                      <IconUploader
+                        currentIcon={customIcons.bus || "/bus-icon.png"}
+                        onIconUpload={(dataUrl) => setCustomIcons({...customIcons, bus: dataUrl})}
+                        alt="Bus"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div
                       contentEditable
@@ -400,7 +486,12 @@ export default function InfographicEditor() {
                   </div>
                   <div className="flex items-center gap-0.5">
                     <div className="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
-                      <img src="/bike-icon.png" alt="Bike" className="w-full h-full object-contain" />
+                      <IconUploader
+                        currentIcon={customIcons.bike || "/bike-icon.png"}
+                        onIconUpload={(dataUrl) => setCustomIcons({...customIcons, bike: dataUrl})}
+                        alt="Bike"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div
                       contentEditable
@@ -413,7 +504,12 @@ export default function InfographicEditor() {
                   </div>
                   <div className="flex items-center gap-0.5">
                     <div className="w-[32px] h-[32px] flex items-center justify-center flex-shrink-0">
-                      <img src="/walking-icon.png" alt="Walking" className="w-full h-full object-contain" />
+                      <IconUploader
+                        currentIcon={customIcons.walking || "/walking-icon.png"}
+                        onIconUpload={(dataUrl) => setCustomIcons({...customIcons, walking: dataUrl})}
+                        alt="Walking"
+                        className="w-full h-full object-contain"
+                      />
                     </div>
                     <div
                       contentEditable
